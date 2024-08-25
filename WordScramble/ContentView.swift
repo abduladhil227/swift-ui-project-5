@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var usedWords = [String]()
     @State private var rootWord = ""
     @State private var newWord = ""
+    @State private var score = 0
     
     @State private var errorTitle = ""
     @State private var errorMessage = ""
@@ -24,6 +25,10 @@ struct ContentView: View {
                 Section{
                     TextField("Enter your Word", text: $newWord)
                         .textInputAutocapitalization(.never)
+                }
+                
+                Section{
+                    Text("Your Score: \(score)")
                 }
                 
                 Section{
@@ -41,6 +46,13 @@ struct ContentView: View {
             .onAppear(perform: startGame)
             .alert(errorTitle, isPresented: $showingError) { } message: {
                 Text(errorMessage)
+            }
+            .toolbar{
+                Button("Restart"){
+                    startGame()
+                    score = 0
+                    usedWords = [String]()
+                }
             }
         }
     }
@@ -66,9 +78,16 @@ struct ContentView: View {
             return
         }
         
+        guard checkLength(word: answer) else {
+            wordError(title: "Answer Too Short or Repeats Start Word", message: "Your answer must be at least three letters long and cannot simply repeat the start word.")
+            return
+        }
+        
         withAnimation{
             usedWords.insert(answer, at: 0)
+            score += 1
         }
+        
         newWord = ""
     }
     
@@ -113,6 +132,12 @@ struct ContentView: View {
         errorTitle = title
         errorMessage = message
         showingError = true
+    }
+    
+    func checkLength(word: String) -> Bool {
+        var tempWord = rootWord
+        return !(word.count < 3 || word == tempWord)
+        
     }
     
 }
